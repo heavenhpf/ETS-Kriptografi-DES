@@ -2,7 +2,7 @@ import base64
 import des
 
 # Membuka image yang akan dienkripsi
-with open("images/test1.jpg", "rb") as imageFile:
+with open("images/test2.jpg", "rb") as imageFile:
     img_byte = base64.b64encode(imageFile.read())
 
     img_str = img_byte.decode("utf-8")
