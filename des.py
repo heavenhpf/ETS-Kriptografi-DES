@@ -2,6 +2,8 @@
 
 Mg = ""
 
+# Tabel permutasi untuk mengubah key 64 bit -> 56 bit
+
 PC1=[57 ,  49,    41,   33,    25 ,   17 ,   9,
                1  , 58 ,   50 ,  42 ,   34 ,   26 ,  18,
               10  ,  2  ,  59  , 51 ,   43 ,   35 ,  27,
@@ -10,6 +12,8 @@ PC1=[57 ,  49,    41,   33,    25 ,   17 ,   9,
                7 ,  62,    54,   46 ,   38 ,   30  , 22,
               14,    6 ,   61,   53 ,   45 ,   37  , 29,
               21 ,  13  ,   5 ,  28 ,   20 ,   12  ,  4]
+
+# Tabel permutasi untuk mengubah key 56 bit -> 48 bit
 
 PC2=[14,    17 ,  11,    24 ,    1,    5,
                   3,    28 ,  15  ,   6,    21 ,  10,
@@ -20,6 +24,8 @@ PC2=[14,    17 ,  11,    24 ,    1,    5,
                  44 ,   49 ,  39  ,  56 ,   34,   53,
                  46  ,  42,   50   , 36,    29 ,  32]
 
+# Tabel Permutasi untuk plaintext
+
 IP1=[            58,    50,   42,    34,    26 ,  18,    10   , 2,
             60,    52 ,  44,    36 ,   28,   20,    12,    4,
             62 ,   54 ,  46 ,   38,    30,   22,    14,    6,
@@ -28,6 +34,8 @@ IP1=[            58,    50,   42,    34,    26 ,  18,    10   , 2,
             59 ,   51,   43,    35,    27,   19,    11,    3,
             61 ,   53 ,  45,    37 ,   29,   21,    13,    5,
             63 ,   55,   47,    39,    31,   23,    15,    7 ]
+
+# Tabel Permutasi untuk hasil akhir DES (R16L16)
 
 IP2=[40,     8,   48,    16 ,   56 ,  24 ,   64,   32,
             39 ,    7,   47 ,   15 ,   55,   23,    63,   31,
@@ -38,6 +46,8 @@ IP2=[40,     8,   48,    16 ,   56 ,  24 ,   64,   32,
             34 ,    2,   42,    10 ,   50,   18,    58,   26,
             33,     1,   41,     9 ,   49,   17,    57,   25]
 
+# Tabel Permutasi untuk Rn-1 pada f(Rn-1, Kn) 32 bit -> 64 bit 
+
 E=[ 32,     1 ,   2,     3,     4,    5,
                   4,     5   , 6,     7,     8,    9,
                   8,     9 ,  10,    11,    12,   13,
@@ -47,6 +57,8 @@ E=[ 32,     1 ,   2,     3,     4,    5,
                  24 ,   25 ,  26,    27,    28,   29,
                  28  ,  29,   30,    31 ,   32,    1]
 
+# Tabel permutasi untuk hasil S-Box, maka didapatkan hasil f(Rn-1, Kn)
+
 P=[16 ,  7,  20 , 21,
                          29,  12,  28,  17,
                           1,  15,  23,  26,
@@ -55,6 +67,8 @@ P=[16 ,  7,  20 , 21,
                          32 , 27,   3,   9,
                          19 , 13,  30,   6,
                          22 , 11,   4,  25]
+
+# Tabel S-Box untuk mengubah f(Rn-1, Kn) 48 bit -> 32 bit
 
 S1=[14 , 4,  13,  1,   2,   15,  11,  8,   3, 10,   6, 12,   5,  9,   0,  7,
       0, 15,   7,  4,  14,  2,  13,  1,  10,  6,  12, 11,   9,  5,   3,  8,
@@ -96,12 +110,16 @@ S8= [13 , 2 ,  8,  4  , 6, 15 , 11,  1,  10,  9 ,  3, 14,   5,  0,  12,  7,
       7 ,11 ,  4,  1 ,  9, 12 , 14,  2,   0,  6,  10, 13,  15,  3,   5,  8,
       2 , 1,  14 , 7,   4, 10,   8, 13,  15 ,12,   9,  0,   3,  5,   6, 11]
 
+# Fungsi Left Shift untuk mencari 16 Key
+
 def lshift(s,n):
     l=len(s)
     t=""
     for i in range(0,l):
         t+=s[(i+n)%l]
     return t
+ 
+# Fungsi untuk menggenerate key round
 
 def createK(C,D):
     K=""
@@ -113,6 +131,8 @@ def createK(C,D):
             K+=D[j%28]
     return K
 
+# Fungsi untuk melakukan XOR
+
 def XOR(L,R):
     l=len(L)
     s=""
@@ -123,6 +143,8 @@ def XOR(L,R):
             s+='1'
     return s
 
+# Fungsi untuk melakukan permutasi dengan tabel S-Box
+
 def sb2(f,S):
     r=f[0]+f[5]
     c=f[1:5]
@@ -132,6 +154,8 @@ def sb2(f,S):
     s=""
     s+="{0:b}".format(rc).zfill(4)
     return s
+
+# Fungsi untuk melakukan permutasi dengan tabel S-Box
 
 def sb(f):
     s=""
@@ -150,32 +174,41 @@ def sb(f):
 
     return temp
     
+# Fungsi untuk memutasi Rn-1 pada f(Rn-1, Kn) dengan E Bit Selection Table
 
 def Etable(R,K):
     temp=""
     for i in range(0,48):
         temp+=R[E[i]-1]
     return XOR(temp,K)
-    
+
+# Fungsi untuk mengubah f(Rn-1, Kn) 48 bit -> 32 bit dengan permutasi S-Box
+
 def func(R,K):
     f0=Etable(R,K)
     f=sb(f0)
     return f
     
+# Fungsi untuk melakukan enkripsi
 
 def encrypt(M,K):
+    # Plaintext
     M=bin(int(M, 16))[2:].zfill(64)
+    # Key
     K=bin(int(K,16))[2:].zfill(64)
+    # Split Plaintext
     L=M[0:32]
     R=M[32:64]
-
+    # Mengubah key 64 bit -> 56 bit
     temp=""
     for i in range(0,56):
         temp+=K[PC1[i]-1]
 
     K=temp
+    # Split Key Menjadi C0 & D0
     C0=K[0:28]
     D0=K[28:56]
+    # Melakukan Left Shift untuk mendapatkan CnDn
     C1=lshift(C0,1)
     D1=lshift(D0,1)
     C2=lshift(C1,1)
@@ -208,7 +241,7 @@ def encrypt(M,K):
     D15=lshift(D14,2)
     C16=lshift(C15,1)
     D16=lshift(D15,1)
-
+    # Membuat key round
     K1=createK(C1,D1)
     K2=createK(C2,D2)
     K3=createK(C3,D3)
@@ -225,14 +258,14 @@ def encrypt(M,K):
     K14=createK(C14,D14)
     K15=createK(C15,D15)
     K16=createK(C16,D16)
-
+    # Mutasi Plaintext dengan tabel IP
     IP=""
     for i in range(0,64):
         IP+=M[IP1[i]-1]
-    
+    # Split Plaintext
     L0=IP[0:32]
     R0=IP[32:64]
-
+    #Mencari Nilai LnRn
     L1=R0
     R1=XOR(L0,func(R0,K1) )
 
@@ -266,27 +299,32 @@ def encrypt(M,K):
     R15=XOR(L14,func(R14,K15) )
     L16=R15
     R16=XOR(L15,func(R15,K16) )
-
+    # Hasil Reverse R16L16
     LR=R16+L16
+    # Permutasi Hasil Akhir dengan tabel IP2
     temp=""
     for i in range(0,64):
         temp+=LR[IP2[i]-1]
         RL=temp
 
-    #C="{0:0>4X}".format(int(RL, 2))
     C = '%0*X' % ((len(RL) + 3) // 4, int(RL, 2))
     return C
 
-def decrypt(C,K):
-    K=bin(int(K,16))[2:].zfill(64)
+# Fungsi untuk melakukan dekripsi
 
+def decrypt(C,K):
+    # Key
+    K=bin(int(K,16))[2:].zfill(64)
+    # Mengubah key 64 bit -> 56 bit
     temp=""
     for i in range(0,56):
         temp+=K[PC1[i]-1]
 
     K=temp
+    # Split Key
     C0=K[0:28]
     D0=K[28:56]
+    # Melakukan Left Shift untuk mendapatkan CnDn
     C1=lshift(C0,1)
     D1=lshift(D0,1)
     C2=lshift(C1,1)
@@ -319,7 +357,7 @@ def decrypt(C,K):
     D15=lshift(D14,2)
     C16=lshift(C15,1)
     D16=lshift(D15,1)
-
+    # Membuat key round
     K1=createK(C1,D1)
     K2=createK(C2,D2)
     K3=createK(C3,D3)
@@ -336,16 +374,16 @@ def decrypt(C,K):
     K14=createK(C14,D14)
     K15=createK(C15,D15)
     K16=createK(C16,D16)
-    
+    # Mutasi Plaintext dengan tabel IP
     RL=bin(int(C,16))[2:].zfill(64)
     temp=""
     for i in range(0,64):
         temp+=RL[IP1[i]-1]
         LR=temp
-    
+    # Split LR
     R16=LR[0:32]
     L16=LR[32:64]
-    
+    # Mencari nilai LnRn
     L15=XOR(R16,func(L16,K16))
     R15=L16
     L14=XOR(R15,func(L15,K15))
@@ -380,7 +418,7 @@ def decrypt(C,K):
     R0=L1
     
     IP=L0+R0
-    
+    # Mencari Plaintext dengan melakukan permutasi terhadap tabel IP2
     temp=""
     for i in range(0,64):
         temp+=IP[IP2[i]-1]
